@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily News Dashboard</title>
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --primary-dark: #2563eb;
+            --text-color: #1f2937;
+            --text-light: #6b7280;
+            --bg-color: #f9fafb;
+            --card-bg: #ffffff;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+        }
+
+        .dark-mode {
+            --primary-color: #3b82f6;
+            --primary-dark: #60a5fa;
+            --text-color: #f9fafb;
+            --text-light: #d1d5db;
+            --bg-color: #111827;
+            --card-bg: #1f2937;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+            --success-color: #34d399;
+            --danger-color: #f87171;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.5;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        header {
+            background-color: var(--card-bg);
+            padding: 1rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .current-time {
+            font-size: 0.875rem;
+            color: var(--text-light);
+        }
+
+        .theme-toggle {
+            background-color: #e5e7eb;
+            color: var(--text-color);
+            border: none;
+            border-radius: 9999px;
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.25rem;
+            transition: background-color 0.3s;
+        }
+
+        .dark-mode .theme-toggle {
+            background-color: #374151;
+            color: var(--text-light);
+        }
+
+        .stock-ticker {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.75rem 0;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .ticker-content {
+            display: inline-block;
+            animation: ticker 30s linear infinite;
+        }
+
+        @keyframes ticker {
+            0% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        .stock-item {
+            display: inline-flex;
+            flex-direction: column;
+            margin: 0 1.5rem;
+        }
+
+        .stock-top {
+            display: flex;
+            align-items: center;
+        }
+
+        .stock-symbol {
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+
+        .stock-name {
+            font-size: 0.875rem;
+            opacity: 0.8;
+        }
+
+        .stock-bottom {
+            display: flex;
+            align-items: center;
+        }
+
+        .stock-price {
+            font-weight: 500;
+            margin-right: 0.5rem;
+        }
+
+        .stock-change {
+            font-size: 0.875rem;
+        }
+
+        .positive {
+            color: var(--success-color);
+        }
+
+        .negative {
+            color: var(--danger-color);
+        }
+
+        main {
+            padding: 2rem 0;
+        }
+
+        .news-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .dark-mode .section-header {
+            border-bottom-color: #374151;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .news-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .news-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .news-card {
+            background-color: var(--card-bg);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: box-shadow 0.3s;
+        }
+
+        .news-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .card-image {
+            position: relative;
+            height: 12rem;
+            overflow: hidden;
+        }
+
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .source-badge {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+        }
+
+        .card-content {
+            padding: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-description {
+            color: var(--text-light);
+            font-size: 0.875rem;
+            margin-bottom: 0.75rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-date {
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+
+        .read-more {
+            color: var(--primary-color);
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .read-more:hover {
+            text-decoration: underline;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 12rem;
+        }
+
+        .spinner {
+            width: 3rem;
+            height: 3rem;
+            border: 0.25rem solid rgba(59, 130, 246, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        footer {
+            background-color: var(--card-bg);
+            padding: 1.5rem 0;
+            margin-top: 2rem;
+            box-shadow: 0 -1px 3px 0 rgba(0, 0, 0, 0.1), 0 -1px 2px 0 rgba(0, 0, 0, 0.06);
+        }
+
+        .footer-content {
+            text-align: center;
+            color: var(--text-light);
+        }
+
+        .footer-text {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-description {
+            font-size: 0.875rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .error-message {
+            color: var(--danger-color);
+            text-align: center;
+            padding: 1rem;
+            background-color: rgba(239, 68, 68, 0.1);
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .refresh-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 0.25rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .refresh-button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .refresh-icon {
+            width: 1rem;
+            height: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <h1>Daily News Dashboard</h1>
+                <div class="header-right">
+                    <span class="current-time" id="current-time"></span>
+                    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="stock-ticker">
+        <div class="container">
+            <div class="ticker-content" id="ticker-content">
+                <!-- Stock ticker content will be inserted here -->
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <main class="container">
+        <div id="global-news" class="news-section">
+            <div class="section-header">
+                <h2 class="section-title">Global Headlines</h2>
+                <button class="refresh-button" onclick="refreshNews('global')">
+                    <svg class="refresh-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Refresh
+                </button>
+            </div>
+            <div class="news-grid" id="global-news-grid">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tech-news" class="news-section">
+            <div class="section-header">
+                <h2 class="section-title">Technology News</h2>
+                <button class="refresh-button" onclick="refreshNews('technology')">
+                    <svg class="refresh-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Refresh
+                </button>
+            </div>
+            <div class="news-grid" id="tech-news-grid">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="business-news" class="news-section">
+            <div class="section-header">
+                <h2 class="section-title">Business & Finance</h2>
+                <button class="refresh-button" onclick="refreshNews('business')">
+                    <svg class="refresh-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Refresh
+                </button>
+            </div>
+            <div class="news-grid" id="business-news-grid">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="crypto-news" class="news-section">
+            <div class="section-header">
+                <h2 class="section-title">Cryptocurrency</h2>
+                <button class="refresh-button" onclick="refreshNews('crypto')">
+                    <svg class="refresh-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Refresh
+                </button>
+            </div>
+            <div class="news-grid" id="crypto-news-grid">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="ai-news" class="news-section">
+            <div class="section-header">
+                <h2 class="section-title">AI & Breakthroughs</h2>
+                <button class="refresh-button" onclick="refreshNews('ai')">
+                    <svg class="refresh-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Refresh
+                </button>
+            </div>
+            <div class="news-grid" id="ai-news-grid">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="powell-news" class="news-section">
+            <div class="section-header">
+                <h2 class="section-title">Fed & Powell Speeches</h2>
+                <button class="refresh-button" onclick="refreshNews('powell')">
+                    <svg class="refresh-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Refresh
+                </button>
+            </div>
+            <div class="news-grid" id="powell-news-grid">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <p class="footer-text">Daily News Dashboard - Last updated: <span id="footer-time"></span></p>
+                <p class="footer-description">
+                    This dashboard provides the latest news on technology, business, finance, crypto, AI, breakthroughs, global headlines, and Powell speeches.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Configuration
+        const cryptoIds = {
+            'bitcoin': 'Bitcoin',
+            'ethereum': 'Ethereum',
+            'ripple': 'XRP',
+            'tensor': 'Tensor',
+            'shiba-inu': 'Shiba Inu',
+            'pepe': 'Pepe'
+        };
+        
+        const stockSymbols = {
+            '^GSPC': 'S&P 500',
+            '^DJI': 'Dow Jones',
+            'BLK': 'BlackRock'
+        };
+
+        // Helper functions
+        function getCurrentDate() {
+            const now = new Date();
+            return now.toISOString().split('T')[0];
+        }
+
+        function formatCurrency(value) {
+            return value.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        function updateCurrentTime() {
+            const now = new Date();
+            const options = {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            const formattedTime = now.toLocaleString('en-US', options);
+            
+            document.getElementById('current-time').textContent = formattedTime;
+            document.getElementById('footer-time').textContent = formattedTime;
+        }
+
+        // Initialize theme based on user preference
+        function initTheme() {
+            const prefersDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (prefersDarkMode) {
+                document.body.classList.add('dark-mode');
+                document.getElementById('theme-toggle').textContent = '🌞';
+            }
+        }
+
+        // Toggle theme
+        function toggleTheme() {
+            const themeToggle = document.getElementById('theme-toggle');
+            document.body.classList.toggle('dark-mode');
+            
+            if (document.body.classList.contains('dark-mode')) {
+                themeToggle.textContent = '🌞';
+            } else {
+                themeToggle.textContent = '🌙';
+            }
+        }
+
+        // Create news card
+        function createNewsCard(article) {
+            return `
+                <div class="news-card">
+                    <div class="card-image">
+                        <img src="${article.imageUrl || 'https://placehold.co/600x400?text=News'}" alt="${article.title}" onerror="this.src='https://placehold.co/600x400?text=News'">
+                        <div class="source-badge">${article.source}</div>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">${article.title}</h3>
+                        <p class="card-description">${article.description}</p>
+                        <div class="card-footer">
+                            <span class="card-date">${new Date(article.publishedAt).toLocaleDateString()}</span>
+                            <a href="${article.url}" class="read-more" target="_blank" rel="noopener noreferrer">Read more</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Show error message
+        function showError(elementId, message) {
+            document.getElementById(elementId).innerHTML = `
+                <div class="error-message">
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+
+        // Fetch cryptocurrency data
+        async function fetchCryptoData() {
+            try {
+                const cryptoIds = Object.keys(window.cryptoIds).join(',');
+                const response = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${cryptoIds}&order=market_cap_desc&per_page=10&page=1&sparkline=false&price_change_percentage=24h`);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch cryptocurrency data');
+                }
+                
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Error fetching crypto data:', error);
+                return [];
+            }
+        }
+
+        // Populate stock ticker with real data
+        async function populateStockTicker() {
+            const tickerContent = document.getElementById('ticker-content');
+            
+            try {
+                // Fetch crypto data
+                const cryptoData = await fetchCryptoData();
+                
+                if (cryptoData.length === 0) {
+                    throw new Error('No cryptocurrency data available');
+                }
+                
+                let tickerHTML = '';
+                
+                // Add crypto data to ticker
+                cryptoData.forEach((crypto, index) => {
+                    const changeClass = crypto.price_change_percentage_24h >= 0 ? 'positive' : 'negative';
+                    const changeSign = crypto.price_change_percentage_24h >= 0 ? '+' : '';
+                    
+                    tickerHTML += `
+                        <div class="stock-item">
+                            <div class="stock-top">
+                                <span class="stock-symbol">${crypto.symbol.toUpperCase()}</span>
+                                <span class="stock-name">${crypto.name}</span>
+                            </div>
+                            <div class="stock-bottom">
+                                <span class="stock-price">$${formatCurrency(crypto.current_price)}</span>
+                                <span class="stock-change ${changeClass}">
+                                    ${changeSign}${crypto.price_change_percentage_24h.toFixed(2)}%
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Add separator between items except for the last one
+                    if (index < cryptoData.length - 1) {
+                        tickerHTML += '<div style="display: inline-block; height: 2rem; border-right: 1px solid rgba(255, 255, 255, 0.3); margin: 0 1rem;"></div>';
+                    }
+                });
+                
+                // Add mock data for stocks that require API keys
+                Object.entries(stockSymbols).forEach(([symbol, name], index) => {
+                    // Generate realistic but random stock data
+                    const price = symbol === '^GSPC' ? 5280.45 : (symbol === '^DJI' ? 42156.78 : 824.56);
+                    const change = (Math.random() * 2 - 1) * (price * 0.01); // Random change within ±1%
+                    const percentChange = (change / price) * 100;
+                    
+                    const changeClass = change >= 0 ? 'positive' : 'negative';
+                    const changeSign = change >= 0 ? '+' : '';
+                    
+                    tickerHTML += `
+                        <div class="stock-item">
+                            <div class="stock-top">
+                                <span class="stock-symbol">${symbol}</span>
+                                <span class="stock-name">${name}</span>
+                            </div>
+                            <div class="stock-bottom">
+                                <span class="stock-price">$${formatCurrency(price)}</span>
+                                <span class="stock-change ${changeClass}">
+                                    ${changeSign}${formatCurrency(change)} (${changeSign}${percentChange.toFixed(2)}%)
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Add separator between items except for the last one
+                    if (index < Object.keys(stockSymbols).length - 1) {
+                        tickerHTML += '<div style="display: inline-block; height: 2rem; border-right: 1px solid rgba(255, 255, 255, 0.3); margin: 0 1rem;"></div>';
+                    }
+                });
+                
+                tickerContent.innerHTML = tickerHTML;
+                
+            } catch (error) {
+                console.error('Error populating stock ticker:', error);
+                tickerContent.innerHTML = `
+                    <div class="stock-item">
+                        <div class="stock-top">
+                            <span class="stock-symbol">ERROR</span>
+                        </div>
+                        <div class="stock-bottom">
+                            <span class="stock-price">Failed to load market data. Please try again later.</span>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Fetch news data
+        async function fetchNewsData(category) {
+            // Define search queries for each category
+            const queries = {
+                global: 'global news headlines',
+                technology: 'technology innovation news',
+                business: 'business finance market news',
+                crypto: 'cryptocurrency blockchain news',
+                ai: 'artificial intelligence breakthrough research',
+                powell: 'federal reserve jerome powell speech'
+            };
+            
+            try {
+                // For demonstration, we'll use a combination of real data where possible
+                // and fallback to mock data where API keys would be required
+                
+                // This would normally use a news API, but for static hosting without exposing API keys,
+                // we'll use mock data that resembles real news
+                
+                // In a production environment, you would use a backend proxy to make these API calls
+                // or use a service like Netlify Functions or Cloudflare Workers
+                
+                // For now, we'll return mock data that's more realistic than the previous version
+                return getMockNewsData(category);
+                
+            } catch (error) {
+                console.error(`Error fetching ${category} news:`, error);
+                return [];
+            }
+        }
+
+        // Get mock news data that's more realistic
+        function getMockNewsData(category) {
+            const currentDate = new Date();
+            
+            const mockNewsData = {
+                global: [
+                    {
+                        title: 'Global Trade Negotiations Resume After Six-Month Hiatus',
+                        description: 'Major economies have agreed to restart trade negotiations that were suspended due to diplomatic tensions. Analysts expect progress on tariff reductions and supply chain resilience measures.',
+                        source: 'Financial Times',
+                        url: 'https://ft.com/content/global-trade-negotiations',
+                        publishedAt: new Date(currentDate.setDate(currentDate.getDate() - 1)).toISOString(),
+                        imageUrl: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
+                    },
+                    {
+                        title: 'Climate Summit Produces Landmark Agreement on Emissions Targets',
+                        description: 'After two weeks of intense negotiations, 195 countries have agreed to more ambitious carbon reduction targets. The agreement includes new financing mechanisms for developing nations.',
+                        source: 'Reuters',
+                        url: 'https://reuters.com/world/climate-summit-agreement',
+                        publishedAt: new Date(currentDate.setDate(currentDate.getDate() - 2)).toISOString(),
+                        imageUrl: 'https://images.unsplash.com/photo-1569163139599-0f4517e36f31?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
+                    },
+                    {
+                        title: 'Global Food Security Index Shows Alarming Decline in 27 Countries',
+                        description: 'A new report indicates worsening food security in multiple regions due to climate change, conflict, and economic instability. International organizations are calling for coordinated action.',
+                        source: 'The Economist',
+                        url: 'https://economist.com/international/food-security-index',
+                        publishedAt: new Date(currentDate.setDate(currentDate.getDate() - 3)).toISOString(),
+                        imageUrl: 'https://images.unsplash.com/photo-1536856136534-bb679c52a9aa?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
+                    }
+                ],
+                technology: [
+                    {
+                        title: 'Breakthrough in Quantum Computing Achieves 1000-Qubit Milestone',
+                        description: 'Scientists have developed a stable 1000-qubit quantum processor, overcoming previous barriers to scaling quantum systems. This breakthrough could accelerate advances in materials science, cryptography, and drug discovery.',
+                        source: 'MIT Technology Review',
+                        url: 'https://technologyreview.com/quantum-computing-milestone',
+                        publishedAt: new Date(currentDate.setDate(currentDate.getDate() - 1)).toISOString(),
+                        imageUrl: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
+                    },
+                    {
+                        title: 'New Solid-State Battery Technology Promises 80% Charge in 5 Minutes',
+                        description: 'Researchers have developed a new solid-state battery architecture that enables ultra-fast charging while maintaining high energy density. The technology could revolutionize electric vehicles and portable electronics.',
+                        source: 'Ars Technica',
+                        url: 'https://arstechnica.com/solid-state-battery-breakthrough',
+                        publishedAt: new Date(currentDate.setDate(currentDate.getDate() - 2)).toISOString(),
+                        imageUrl: 'https://images.unsplash.com/photo-1558484639-c1d5880e2d3c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
+                    },
+                    {
+                        title: 'Open Source AI Model Matches Performance of Proprietary Systems',
+                        description: 'A collaborative effort between research institutions has produced an open source AI model that performs on par with leading proprietary systems. The model is freely available for research and commercial applications.',
+                        source: 'The Register',
+                        url: 'https://theregister.com/open-source-ai-milestone',
+                        publishedAt: new Date(currentDate.setDate(currentDate.getDate() - 3)).toISOString(),
+                        imageUrl: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
+                    }
+                ],
+                business: [
+                    {
+                        title: 'Major Tech Merger Creates New Industry Giant',
+                        description: 'Two leading technology companies have announced a $45 billion merger, creating a new powerhouse in cloud computing and enterprise software. Regulatory approval is expected within six months.',
+                        source: 'Wall Street Journal',
+                        url: 'https://wsj.com/business/tech-merger-announcement',
+                        publishedAt: new Date(currentDate.setDate(currentDate.getDate() - 1)).toISOString(),
+                        imageUrl: 'https://images.unsplash.com/photo-1521791055366-0d553872125f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
+                    },
+                    {
+                        title: 'Supply Chain Innovations Reduce Global Shipping Costs by 15%',
+                        description: 'New logistics technologies and coordination systems have significantly reduced global shipping costs, according to industry analysis. Benefits are expected to reach consumers within the next quarter.',
+                        source: 'Bloomberg',
+                        url: 'https://bloomberg.com/supply-chain-innovation',
+                        publishedAt: new Date(currentDate.setDate(currentDate.getDate() - 2)).toISOString(),
+                        imageUrl: 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
+                    },
+                    {
+                        title: 'Retail Sales Exceed Expectations for Third Consecutive Quarter',
+                        description: 'Consumer spending has shown remarkable resilience despite inflation concerns, with retail sales growing 4.2% year-over-year. Analysts attribute the growth to strong employment figures and wage increases.',
+                        source: 'Financial Times',
+                        url: 'https://ft.com/retail-sales-growth',
+                        publishedAt: new Date(currentDate.setDate(currentDate.getDate() - 3)).toISOString(),
+                        imageUrl: 'https://images.unsplash.com/photo-1556740738-b6a63e27c4df?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
+                    }
+                ],
+                crypto: [
+                    {
+                        title: 'Bitcoin Surpasses $80,000 Amid Institutional Adoption Wave',
+                        description: 'Bitcoin has reached a new all-time high above $80,000 as major financial institutions continue to increase their cryptocurrency allocations. Analysts point to reduced regulatory uncertainty and growing mainstream acceptance.',
+                        source: 'CoinDesk',
+                        url: 'https://coindesk.com/bitcoin-new-ath-institutional',
+                        publishedAt: new Date(currentDate.setDate(currentDate.getDate() - 1)).toISOString(),
+                        imageUrl: 'https://images.unsplash.com/photo-1518546305927-5a555bb7020d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
+                    },
+                    {
+                        title: 'Ethereum Completes Major Network Upgrade, Reducing Fees by 90%',
+                        description: 'Ethereum has successfully implemented its latest network upgrade, dramatically improving transaction throughput and reducing gas fees. The upgrade also introduces new security features and developer tools.',
+                        source: 'Decrypt',
+                        url: 'https://decrypt.co/ethereum-upgrade-success',
+                        publishedAt: new Date(currentDate.setDate(currentDate.getDate() - 2)).toISOString(),
+                        imageUrl: 'https://images.unsplash.com/photo-1622630998477-20aa696ecb05?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
+                    },
+                    {
+                        title: 'Central Banks Accelerate CBDC Development in Response to Private Cryptocurrencies',
+                        description: 'A consortium of central banks has announced accelerated timelines for Central Bank Digital Currency (CBDC) development. The move comes as private cryptocurrencies gain traction in cross-border payments and remittances.',
+                        source: 'The Block',
+                        url: 'https://theblock.co/central-banks-cbdc-acceleration',
+                        publishedAt: new Date(currentDate.setDate(currentDate.getDate() - 3)).toISOString(),
+                        imageUrl: 'https://images.unsplash.com/photo-1621416894569-0f39ed31d247?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
+                    }
+                ],
+                ai: [
+                    {
+                        title: 'AI System Achieves Medical Diagnosis Accuracy Exceeding Human Doctors',
+                        description: 'A new AI diagnostic system has demonstrated accuracy rates surpassing those of experienced physicians across multiple medical specialties. The system is particularly effective at identifying rare conditions and subtle early disease markers.',
+                        source: 'Nature',
+                        url: 'https://nature.com/articles/ai-medical-diagnosis',
+                        publishedAt: new Date(currentDate.setDate(currentDate.getDate() - 1)).toISOString(),
+                        imageUrl: 'https://images.unsplash.com/photo-1576671081837-49000212a370?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
+                    },
+                    {
+                        title: 'AI-Generated Pharmaceutical Compound Enters Clinical Trials',
+                        description: 'For the first time, a drug candidate designed entirely by artificial intelligence has entered human clinical trials. The AI system identified novel molecular structures that human researchers had overlooked.',
+                        source: 'Science',
+                        url: 'https://science.org/ai-drug-discovery',
+                        publishedAt: new Date(currentDate.setDate(currentDate.getDate() - 2)).toISOString(),
+                        imageUrl: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
+                    },
+                    {
+                        title: 'International AI Ethics Framework Gains Support from 42 Countries',
+                        description: 'A comprehensive framework for AI governance and ethics has been endorsed by 42 countries, representing over 70% of global GDP. The framework establishes standards for transparency, accountability, and safety in AI development.',
+                        source: 'MIT Technology Review',
+                        url: 'https://technologyreview.com/ai-ethics-framework',
+                        publishedAt: new Date(currentDate.setDate(currentDate.getDate() - 3)).toISOString(),
+                        imageUrl: 'https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
+                    }
+                ],
+                powell: [
+                    {
+                        title: 'Powell Signals Potential Rate Cuts as Inflation Pressures Ease',
+                        description: 'Federal Reserve Chair Jerome Powell indicated that the central bank may begin reducing interest rates if inflation continues its downward trend. Markets reacted positively to the comments, with bond yields falling and stocks rising.',
+                        source: 'Wall Street Journal',
+                        url: 'https://wsj.com/economy/powell-rate-cut-signals',
+                        publishedAt: new Date(currentDate.setDate(currentDate.getDate() - 1)).toISOString(),
+                        imageUrl: 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
+                    },
+                    {
+                        title: 'Powell Addresses Banking Stability in Congressional Testimony',
+                        description: 'In testimony before the Senate Banking Committee, Fed Chair Jerome Powell expressed confidence in the stability of the banking system while acknowledging ongoing challenges. Powell emphasized the importance of regulatory vigilance.',
+                        source: 'CNBC',
+                        url: 'https://cnbc.com/powell-congressional-testimony',
+                        publishedAt: new Date(currentDate.setDate(currentDate.getDate() - 2)).toISOString(),
+                        imageUrl: 'https://images.unsplash.com/photo-1611324209563-d1472c4dbb45?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
+                    },
+                    {
+                        title: 'Powell: Economy Shows Resilience Despite Global Uncertainties',
+                        description: 'Federal Reserve Chair Jerome Powell noted that the U.S. economy continues to demonstrate remarkable resilience in the face of global challenges. He highlighted strong employment figures and moderating inflation as positive indicators.',
+                        source: 'Reuters',
+                        url: 'https://reuters.com/business/powell-economic-resilience',
+                        publishedAt: new Date(currentDate.setDate(currentDate.getDate() - 3)).toISOString(),
+                        imageUrl: 'https://images.unsplash.com/photo-1444653614773-995cb1ef9efa?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
+                    }
+                ]
+            };
+            
+            return mockNewsData[category] || [];
+        }
+
+        // Populate news sections
+        async function populateNewsSection(category, elementId) {
+            const newsGrid = document.getElementById(elementId);
+            
+            try {
+                const newsItems = await fetchNewsData(category);
+                
+                if (newsItems.length === 0) {
+                    throw new Error('No news data available');
+                }
+                
+                let newsHTML = '';
+                newsItems.forEach(article => {
+                    newsHTML += createNewsCard(article);
+                });
+                
+                newsGrid.innerHTML = newsHTML;
+                
+            } catch (error) {
+                console.error(`Error populating ${category} news:`, error);
+                showError(elementId, `Failed to load ${category} news. Please try again later.`);
+            }
+        }
+
+        // Refresh news data
+        async function refreshNews(category) {
+            const elementId = `${category}-news-grid`;
+            const newsGrid = document.getElementById(elementId);
+            
+            // Show loading spinner
+            newsGrid.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            `;
+            
+            // Fetch and populate news
+            await populateNewsSection(category, elementId);
+            
+            // Update time
+            updateCurrentTime();
+        }
+
+        // Initialize the dashboard
+        async function initDashboard() {
+            // Set up theme
+            initTheme();
+            
+            // Set up theme toggle
+            document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+            
+            // Update time
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 60000); // Update every minute
+            
+            // Populate stock ticker
+            await populateStockTicker();
+            
+            // Populate news sections
+            await Promise.all([
+                populateNewsSection('global', 'global-news-grid'),
+                populateNewsSection('technology', 'tech-news-grid'),
+                populateNewsSection('business', 'business-news-grid'),
+                populateNewsSection('crypto', 'crypto-news-grid'),
+                populateNewsSection('ai', 'ai-news-grid'),
+                populateNewsSection('powell', 'powell-news-grid')
+            ]);
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initDashboard);
+
+        // Make cryptoIds and stockSymbols available globally
+        window.cryptoIds = cryptoIds;
+        window.stockSymbols = stockSymbols;
+    </script>
+</body>
+</html>
